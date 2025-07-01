@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { 
-  MessageSquare, 
-  Plus, 
-  Trash2, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  MessageSquare,
+  Plus,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
   Search,
   Clock
 } from 'lucide-react'
@@ -33,17 +33,19 @@ export function ConversationSidebar({
 }: ConversationSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Filter conversations based on title or message content
   const filteredConversations = conversations.filter(conv =>
     conv.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.messages.some(msg => 
+    conv.messages.some(msg =>
       msg.content.toLowerCase().includes(searchQuery.toLowerCase())
     )
   )
 
+  // Format date into relative time string
   const formatRelativeTime = (date: Date) => {
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+
     if (diffInHours < 1) return 'Just now'
     if (diffInHours < 24) return `${diffInHours}h ago`
     if (diffInHours < 48) return 'Yesterday'
@@ -53,20 +55,21 @@ export function ConversationSidebar({
 
   return (
     <>
-      {/* Sidebar */}
+      {/* Sidebar container */}
       <div className={`
         bg-card border-r border-border flex flex-col transition-all duration-300 ease-in-out
         ${isOpen ? 'w-80' : 'w-0'}
         ${isOpen ? 'min-w-80' : 'min-w-0'}
         overflow-hidden
       `}>
-        {/* Header */}
+        {/* Sidebar Header */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-primary" />
               Conversations
             </h2>
+            {/* New conversation button */}
             <button
               onClick={onNewConversation}
               className="p-2 hover:bg-accent rounded-lg transition-colors"
@@ -76,7 +79,7 @@ export function ConversationSidebar({
             </button>
           </div>
 
-          {/* Search */}
+          {/* Search bar */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
@@ -89,9 +92,10 @@ export function ConversationSidebar({
           </div>
         </div>
 
-        {/* Conversations List */}
+        {/* List of conversations */}
         <div className="flex-1 overflow-y-auto scrollbar-thin">
           {filteredConversations.length === 0 ? (
+            // Empty state
             <div className="p-4 text-center text-muted-foreground">
               {searchQuery ? (
                 <div>
@@ -107,33 +111,35 @@ export function ConversationSidebar({
               )}
             </div>
           ) : (
+            // Render filtered conversations
             <div className="p-2 space-y-1">
               {filteredConversations.map((conversation) => (
                 <div
                   key={conversation.id}
-                  className={`group relative p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                    currentConversationId === conversation.id
+                  className={`group relative p-3 rounded-lg cursor-pointer transition-all duration-200 ${currentConversationId === conversation.id
                       ? 'bg-primary/10 border border-primary/20'
                       : 'hover:bg-accent'
-                  }`}
+                    }`}
                   onClick={() => onSelectConversation(conversation.id)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
-                      <h3 className={`font-medium truncate text-sm ${
-                        currentConversationId === conversation.id
+                      {/* Conversation title */}
+                      <h3 className={`font-medium truncate text-sm ${currentConversationId === conversation.id
                           ? 'text-primary'
                           : 'text-card-foreground'
-                      }`}>
+                        }`}>
                         {conversation.title}
                       </h3>
-                      
+
+                      {/* Last message preview */}
                       {conversation.messages.length > 0 && (
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                           {conversation.messages[conversation.messages.length - 1].content}
                         </p>
                       )}
-                      
+
+                      {/* Metadata: time and message count */}
                       <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         <span>{formatRelativeTime(conversation.updatedAt)}</span>
@@ -142,6 +148,7 @@ export function ConversationSidebar({
                       </div>
                     </div>
 
+                    {/* Delete button */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
@@ -159,7 +166,7 @@ export function ConversationSidebar({
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer with count */}
         <div className="p-4 border-t border-border">
           <div className="text-xs text-muted-foreground text-center">
             {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
@@ -167,7 +174,7 @@ export function ConversationSidebar({
         </div>
       </div>
 
-      {/* Toggle Button */}
+      {/* Sidebar toggle button */}
       <button
         onClick={onToggle}
         className={`
