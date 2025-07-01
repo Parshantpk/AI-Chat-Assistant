@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Content Assistant Mini App
+![App Screenshot](image.png)
+A responsive Next.js application featuring AI-powered chat and drag-and-drop content organization. Built for the [Challenge Name] coding challenge.
 
-## Getting Started
+## ✨ Features
 
-First, run the development server:
+✅ **AI Chat Interface**  
+- Realistic mock OpenAI API responses  
+- Typing indicators and loading states  
+- Distinction between user/AI messages  
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+✅ **Content Cards System**  
+- Save AI responses as draggable cards  
+- Reorder cards via native HTML5 drag-and-drop  
+- Local persistence with localStorage  
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+✅ **Bonus Features**  
+- Fully responsive (mobile & desktop)  
+- Dark mode toggle *(if implemented)*  
+- Clean Tailwind CSS styling  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠 Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: Next.js 14 (App Router)  
+- **Styling**: Tailwind CSS  
+- **State Management**: React hooks + localStorage  
+- **Drag-and-Drop**: HTML5 API *(could upgrade to dnd-kit)*  
+- **Type Safety**: TypeScript  
 
-## Learn More
+## 🚀 Getting Started
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the repo**
+   ```bash
+   git clone https://github.com/yourusername/ai-content-assistant.git
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Install dependencies**
+   ```bash
+   npm install
+3. **Build the app**
+   ```bash
+   npm run build
+4. **Start the server**
+   ```bash
+   npm run start
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+📂 Project Structure
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+src/
+├── app/                  
+│   └── page.tsx          # Main page layout & state
+├── components/           # Reusable UI components
+    ├── ChatInterface.tsx # Chat UI + message handling
+    ├── ContentCards.tsx  # Draggable card system
+    └── ConversationSidebar.tsx # Previous chats
