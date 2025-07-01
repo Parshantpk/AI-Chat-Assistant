@@ -43,7 +43,6 @@ A responsive Next.js application featuring AI-powered chat and drag-and-drop con
    ```bash
    npm run start
 
-📂 Project Structure
 
 ## 📂 Project Structure
 
