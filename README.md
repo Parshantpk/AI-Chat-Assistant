@@ -46,9 +46,9 @@ A responsive Next.js application featuring AI-powered chat and drag-and-drop con
 📂 Project Structure
 
 src/
-├── app/                  
+├── app/                  # Next.js App Router
 │   └── page.tsx          # Main page layout & state
-├── components/           # Reusable UI components
+└── components/           # Reusable UI components
     ├── ChatInterface.tsx # Chat UI + message handling
     ├── ContentCards.tsx  # Draggable card system
-    └── ConversationSidebar.tsx # Previous chats
+    └── ConversationSidebar.tsx
