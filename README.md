@@ -1,11 +1,11 @@
 # AI Content Assistant Mini App
 ![App Screenshot](image.png)
-A responsive Next.js application featuring AI-powered chat and drag-and-drop content organization. Built for the [Challenge Name] coding challenge.
+A responsive Next.js application featuring AI-powered chat and drag-and-drop content organization. Built for the test coding challenge.
 
 ## ✨ Features
 
 ✅ **AI Chat Interface**  
-- Realistic mock OpenAI API responses  
+- Realistic mock API responses  
 - Typing indicators and loading states  
 - Distinction between user/AI messages  
 
@@ -16,7 +16,6 @@ A responsive Next.js application featuring AI-powered chat and drag-and-drop con
 
 ✅ **Bonus Features**  
 - Fully responsive (mobile & desktop)  
-- Dark mode toggle *(if implemented)*  
 - Clean Tailwind CSS styling  
 
 ## 🛠 Tech Stack
