@@ -1,9 +1,50 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Loader2, GripVertical } from 'lucide-react'
 import { Message } from '@/app/page'
+import { useDraggable } from '@dnd-kit/core'
+import { CSS } from '@dnd-kit/utilities'
+
+interface DraggableMessageProps {
+  message: Message;
+}
+
+function DraggableMessageBubble({ message }: DraggableMessageProps) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `message-${message.id}`,
+    data: {
+      type: 'message',
+      messageId: message.id
+    }
+  });
+
+  const style = transform ? {
+    transform: CSS.Translate.toString(transform),
+    zIndex: isDragging ? 50 : 1,
+    opacity: isDragging ? 0.8 : 1,
+  } : undefined;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`p-3 rounded-lg transition-all duration-200 bg-muted text-muted-foreground cursor-grab active:cursor-grabbing hover:shadow-md hover:bg-muted/80 ${isDragging ? 'shadow-lg rotate-2 scale-105' : ''}`}
+      {...attributes}
+      {...listeners}
+    >
+      {/* Drag icon for assistant messages */}
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-60 transition-opacity pointer-events-none">
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </div>
+
+      <div className="whitespace-pre-wrap break-words pr-6">
+        {message.content}
+      </div>
+    </div>
+  );
+}
 
 interface ChatInterfaceProps {
   messages: Message[]
@@ -18,7 +59,6 @@ interface ChatInterfaceProps {
 export function ChatInterface({ messages, onAddMessage, conversationTitle }: ChatInterfaceProps) {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [draggedMessage, setDraggedMessage] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -50,7 +90,7 @@ export function ChatInterface({ messages, onAddMessage, conversationTitle }: Cha
         content: response,
         role: 'assistant'
       })
-    } catch (error) {
+    } catch {
       onAddMessage({
         content: 'Sorry, I encountered an error. Please try again.',
         role: 'assistant'
@@ -58,22 +98,6 @@ export function ChatInterface({ messages, onAddMessage, conversationTitle }: Cha
     } finally {
       setIsLoading(false)
     }
-  }
-
-  // Sets the message ID when drag starts (for assistant messages only)
-  const handleDragStart = (e: React.DragEvent, messageId: string) => {
-    setDraggedMessage(messageId)
-    e.dataTransfer.setData('text/plain', messageId)
-    e.dataTransfer.effectAllowed = 'copy'
-    const element = e.currentTarget as HTMLElement
-    element.style.opacity = '0.5'
-  }
-
-  // Clears drag state and restores opacity
-  const handleDragEnd = (e: React.DragEvent) => {
-    setDraggedMessage(null)
-    const element = e.currentTarget as HTMLElement
-    element.style.opacity = '1'
   }
 
   return (
@@ -115,27 +139,17 @@ export function ChatInterface({ messages, onAddMessage, conversationTitle }: Cha
 
               {/* Message bubble */}
               <div className={`group relative max-w-[80%] ${message.role === 'user' ? 'order-first' : ''}`}>
-                <div
-                  className={`p-3 rounded-lg transition-all duration-200 ${message.role === 'user'
-                      ? 'bg-primary text-primary-foreground ml-auto'
-                      : 'bg-muted text-muted-foreground cursor-grab active:cursor-grabbing hover:shadow-md hover:bg-muted/80'
-                    }`}
-                  draggable={message.role === 'assistant'}
-                  onDragStart={(e) => message.role === 'assistant' && handleDragStart(e, message.id)}
-                  onDragEnd={handleDragEnd}
-                >
-                  {/* Drag icon for assistant messages */}
-                  {message.role === 'assistant' && (
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-60 transition-opacity pointer-events-none">
-                      <GripVertical className="h-4 w-4 text-muted-foreground" />
+                {message.role === 'assistant' ? (
+                  <DraggableMessageBubble message={message} />
+                ) : (
+                  <div
+                    className={`p-3 rounded-lg transition-all duration-200 bg-primary text-primary-foreground ml-auto`}
+                  >
+                    <div className="whitespace-pre-wrap break-words pr-6">
+                      {message.content}
                     </div>
-                  )}
-
-                  <div className="whitespace-pre-wrap break-words pr-6">
-                    {message.content}
                   </div>
-                </div>
-
+                )}
                 <div className="text-xs text-muted-foreground mt-1 text-right">
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
