@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 
-import { ChatInterface } from "@/components/ChatInterFace";
+import { ChatInterface } from "@/components/ChatInterface";
 import { ContentCards } from "@/components/ContentCards";
 import { ConversationSidebar } from "@/components/ConversationSidebar";
 import { useEffect, useState } from "react";
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
 
 // Interfaces
 export interface Message {
@@ -48,8 +47,59 @@ export default function Home() {
       : currentConversation?.messages || [];
 
   useEffect(() => {
+    const savedConversations = localStorage.getItem("conversations");
+    const savedCards = localStorage.getItem("cards");
+
+    if (savedConversations) {
+      try {
+        const parsed = JSON.parse(savedConversations);
+        // Revive date objects
+        const revived = parsed.map((c: Omit<Conversation, "createdAt" | "updatedAt" | "messages"> & { createdAt: string, updatedAt: string, messages: (Omit<Message, "timestamp"> & { timestamp: string })[] }) => ({
+          ...c,
+          createdAt: new Date(c.createdAt),
+          updatedAt: new Date(c.updatedAt),
+          messages: c.messages.map((m) => ({
+            ...m,
+            timestamp: new Date(m.timestamp)
+          }))
+        }));
+        setConversations(revived);
+        if (revived.length > 0 && !currentConversationId) {
+          setCurrentConversationId(revived[0].id);
+        }
+      } catch (e) {
+        console.error("Failed to parse conversations from local storage", e);
+      }
+    }
+
+    if (savedCards) {
+      try {
+        const parsed = JSON.parse(savedCards);
+        const revived = parsed.map((c: Omit<ContentCard, "createdAt"> & { createdAt: string }) => ({
+          ...c,
+          createdAt: new Date(c.createdAt)
+        }));
+        setCards(revived);
+      } catch (e) {
+        console.error("Failed to parse cards from local storage", e);
+      }
+    }
+
     setIsInitialized(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("conversations", JSON.stringify(conversations));
+    }
+  }, [conversations, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("cards", JSON.stringify(cards));
+    }
+  }, [cards, isInitialized]);
 
   // Handle sending new messages (user or assistant)
   const addMessage = (
@@ -231,12 +281,46 @@ export default function Home() {
     setCards((prev) => prev.filter((card) => card.id !== cardId));
   };
 
-  const reorderCards = (newCards: ContentCard[]) => {
-    setCards(newCards);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over) return;
+
+    if (over.id === 'content-cards-droppable') {
+      // It was dragged into the content cards area
+      if (typeof active.id === 'string' && active.id.startsWith('message-')) {
+        const messageId = active.id.replace('message-', '');
+        createCard(messageId);
+      }
+    } else if (typeof active.id === 'string' && active.id.startsWith('card-') && typeof over.id === 'string' && over.id.startsWith('card-')) {
+      // Card reordering
+      if (active.id !== over.id) {
+        setCards((items) => {
+          const oldIndex = items.findIndex((i) => `card-${i.id}` === active.id);
+          const newIndex = items.findIndex((i) => `card-${i.id}` === over.id);
+
+          if (oldIndex !== -1 && newIndex !== -1) {
+            const newItems = [...items];
+            const [movedItem] = newItems.splice(oldIndex, 1);
+            newItems.splice(newIndex, 0, movedItem);
+            return newItems;
+          }
+          return items;
+        });
+      }
+    }
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="min-h-screen bg-background text-foreground flex">
         <ConversationSidebar
           conversations={conversations}
@@ -276,14 +360,12 @@ export default function Home() {
                 <ContentCards
                   cards={cards}
                   onDeleteCard={deleteCard}
-                  onReorderCards={reorderCards}
-                  onCreateCardFromDrop={createCard}
                 />
               </div>
             </div>
           </main>
         </div>
       </div>
-    </DndProvider>
+    </DndContext>
   );
 }
